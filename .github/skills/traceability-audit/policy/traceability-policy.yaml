@@ -1,0 +1,155 @@
+# Traceability Policy（注釈方式）
+#
+# 正本は各成果物の中のID参照だけ。
+#   - 文書: 要件・ADDR・実装タスク一覧などに書かれたID
+#   - コード: Production Code / Test Code の `trace:` 注釈
+# 表（Trace Map・要件トレーサビリティ表・確認結果・ADDR別一覧）はすべて
+# trace_check.py が毎回作り直す派生成果物。AST解析は使わない。
+#
+
+version: 3
+
+# ------------------------------------------------------------
+# IDの接頭辞（種類ごと）
+#   「接頭辞-区分-連番」も読める（例: NFR-SEC-001）。
+#   連番は min_digits 桁以上。
+# ------------------------------------------------------------
+ids:
+  requirement: [FR, NFR, SEC, CON, DR, IFR, UIR, UC]
+  acceptance: [AC]
+  addr: [ADDR, ADR]          # 移行期間中は旧ADRも読む
+  entity: [DBD]              # DB論理設計書のエンティティ
+  file_definition: [FILE]    # ファイル定義書
+  task: [TASK]               # 実装タスク一覧
+  change: [CR]               # 変更管理記録（保守）
+  min_digits: 2
+
+# ------------------------------------------------------------
+# IDを定義する文書（glob）
+#   見出し・表の1列目・箇条書き（「- FR-001: 名称」）の先頭にあるIDを定義として読む。
+#   ADDRは1ファイル＝1件（front matterの addr_id、見出し、ファイル名の順で読む）。
+# ------------------------------------------------------------
+sources:
+  requirement: ["docs/requirements/**/*.md"]
+  acceptance: ["docs/requirements/**/*.md"]
+  addr: ["docs/addr/**/*.md", "docs/adr/**/*.md"]
+  entity: ["docs/architecture/db-logical-design*.md", "docs/architecture/db-logical-design/**/*.md"]
+  file_definition: ["docs/architecture/files/*.md"]
+  task: ["docs/architecture/implementation-task-list.md"]
+  change: ["docs/changes/**/*.md"]
+
+document_exclude:
+  - "docs/requirements/requirements.md"
+  - "docs/requirements/features/**"
+  - "**/business_requirements.md"
+  - "**/glossary.md"
+  - "**/requirements_quality_checklist.md"
+
+definition_fields:
+  file_definition: ["File Interface ID"]
+
+integration:
+  preserve_architecture_gate: true
+  allow_requirement_when_addr_not_needed: true
+
+common_exclude:
+  - ".git/**"
+  - ".github/**"
+  - "reports/**"
+  - ".venv/**"
+  - "venv/**"
+  - "node_modules/**"
+  - "__pycache__/**"
+  - "dist/**"
+  - "build/**"
+  - "**/.venv/**"
+  - "**/venv/**"
+  - "**/node_modules/**"
+  - "**/__pycache__/**"
+  - "**/dist/**"
+  - "**/build/**"
+
+# ------------------------------------------------------------
+# ADDR
+# ------------------------------------------------------------
+addr:
+  # 要件へのリンクを読む節（見出しに含まれていればよい）
+  related_sections: ["関連要件", "Related Requirements"]
+  current_status: [ACTIVE, Accepted]
+  proposed_status: [Proposed, DRAFT]     # ARCHITECTURE scopeでだけ有効として扱う
+  retired_status: [SUPERSEDED, Superseded, Deprecated, Rejected]
+
+# ------------------------------------------------------------
+# 注釈を読むファイルと、書いてよいIDの種類
+#   allowed は ids の種類名で書く。
+# ------------------------------------------------------------
+code:
+  include:
+    - "src/**/*.py"
+    - "app/**/*.py"
+    - "**/templates/**/*.html"
+  exclude:
+    - "**/migrations/**"
+  allowed: [addr, entity, file_definition]
+
+unit_test:
+  include:
+    - "tests/unit/**/*.py"
+    - "**/tests/unit/**/*.py"
+  exclude: ["**/conftest.py", "**/__init__.py", "**/_helpers.py"]
+  allowed: [requirement, acceptance, addr, entity, file_definition]
+  junit: ["reports/unit-test/junit.xml"]
+  execution: "reports/unit-test/trace-execution.json"
+
+integration_test:
+  include:
+    - "tests/integration/**/*.py"
+  exclude: ["**/conftest.py", "**/__init__.py", "**/_helpers.py"]
+  allowed: [requirement, acceptance, addr, entity, file_definition]
+  junit: ["reports/integration-test/junit.xml"]
+  execution: "reports/integration-test/trace-execution.json"
+  plan: "reports/integration-test/integration-test-plan.json"
+
+# ------------------------------------------------------------
+# 検査
+#   C01 IDの実在（重複定義を含む）
+#   C02 廃止ADDRを指していない
+#   C03 ADDRの関連要件がある
+#   C04 実装タスクに根拠IDがある
+#   C05 対象ファイルに先頭注釈があり、書いてよい種類のIDだけを使っている
+#   C06 定義ごとの注釈（複数IDのファイル）と、先頭注釈との整合
+#   C07 テストに要件IDがある
+#   C08 コミットメッセージに [TASK-nnn]／[CR-nnn] がある（--commits 指定時）
+#   C09 実装されていないADDRがない
+#   C10 テストされていない要件がない
+#   C11 表が正本から作り直した結果と一致する（--no-write 指定時だけ実行。Validatorとしての実行で使う）
+# ------------------------------------------------------------
+checks:
+  require_test_for: [FR, NFR, SEC]
+  commit_prefixes: [TASK, CR]
+  addr_without_code: []        # コードを持たないADDR（例: 運用だけの判断）
+  scopes:
+    REQUIREMENTS:
+      fail: [C01, C11]
+      warn: []
+    ARCHITECTURE:
+      fail: [C01, C03, C04, C11]
+      warn: []
+    ADDR:
+      fail: [C01, C02, C03, C04, C11]
+      warn: []
+    IMPLEMENTATION:
+      fail: [C01, C02, C03, C04, C05, C06, C11]
+      warn: [C08, C09]
+    UNIT_TEST:
+      fail: [C01, C02, C03, C04, C05, C06, C07, C11]
+      warn: [C08, C09, C10]
+    INTEGRATION_TEST:
+      fail: [C01, C02, C03, C04, C05, C06, C07, C11]
+      warn: [C08, C09, C10]
+    FULL:
+      fail: [C01, C02, C03, C04, C05, C06, C07, C09, C10, C11]
+      warn: [C08]
+
+outputs:
+  dir: "reports/traceability"

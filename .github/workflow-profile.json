@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "profile": "NO_DESIGN_ADDR",
+  "condition_id": "C0",
+  "excluded_phases": ["ARCHITECTURE", "ADDR"]
+}

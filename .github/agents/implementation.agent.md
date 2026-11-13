@@ -28,17 +28,18 @@ Requirements → Implementation → Unit Test → Integration Test → FULLの�
 
 # Inputs and Source of Truth
 
-要件の分割本文、UC/AC、NFR、認証認可、エラー仕様、データモデル、制約、
-Out of Scope、Project AI Steering、準備済みAPI等の入力、既存コード、
+要件の分割本文、UC/AC、NFR、認証認可、エラー仕様、論理データ要件、制約、
+Out of Scope、Project AI Steering、入力対応記録、準備済みAPI等の入力、既存コード、
 親からの実装範囲・run_id・未解決結果を読みます。索引だけで実装しません。
 要件・AC・明示制約は正本です。実装の挙動を要求や期待値の代用にしません。
 必要な方式・分割・ライブラリ選択は要件と制約内で実装担当が行い、コードへ反映します。
+テンプレートの「設計で決定」は実装担当が扱います。具体的な手順はImplementation Skillに従います。
 準備工程として独立した設計書・判断文書・実装計画表を生成しません。
 
 # Responsibilities
 
 - FRだけでなく実装対象の全要件を確認し、Requirement Coverageへ実装箇所・状態・未実装理由を記録する。
-- 要件内の選択は実装する。ACやスコープ変更が必要な曖昧さ・矛盾だけREQUIREMENT_ERROR/BLOCKEDとして親へ返す。
+- 要件内の選択は実装する。要件・AC・明示制約の変更が必要ならREQUIREMENT_ERROR、重要な要求が未確定で依存する対象を実装できなければBLOCKEDとして親へ返す。
 - Production Codeを実装し、既存コードと共通規約に整合させる。仕様外の機能は追加しない。
 - DB接続を外部化し、一時テストDBへ切替可能にする。スキーマ再現性・初期データ非依存を確認する。
 - 本番DB・資格情報・本番データをテストに使用せず、秘密情報をハードコードしない。

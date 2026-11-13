@@ -92,15 +92,16 @@ FULLから戻った場合は古い結合完了を流用せず、必要な再実�
 Requirements Agentに準備済み資料・分割要件本文・UC/AC・Steering・入力対応記録を渡します。
 テンプレートを正本とし、既に確定済みの02を使う場合は内容確認だけで不用意に再作成しません。
 `validate_requirements_structure.py` とREQUIREMENTS Scopeの品質・安全性・追跡検査を行います。
-索引だけでなく本文・UC詳細・重大な未決事項を後続へ渡します。
+索引に加え、本文・UC詳細・入力対応記録を後続へ渡します。「設計で決定」の対象と根拠は実装担当へ渡し、
+要求・権限・合否条件の重大な未決は影響対象と確認先を付けて別に渡します。
 通常PASS、または実際の3回修正後の継続判定でImplementationへ進みます。
 
 # Phase 2: Implementation
 
-Implementation Agentへ要件本文・UC/AC・Steering・準備済み仕様・既存コード・未解決事項を渡します。
+Implementation Agentへ要件本文・UC/AC・Steering・入力対応記録・準備済み仕様・既存コード・未解決事項を渡します。
 設計書、Task、判断文書やGateは前提にしません。別名の設計工程・計画Agentを追加しません。
 実装に必要な方式選択は要件・制約内で実装担当が行い、コードと実装報告へ必要な根拠を残します。
-要件の意味・AC・スコープ・明示制約を変える必要がある場合だけREQUIREMENT_ERRORとして親へ返します。
+要件の意味・AC・スコープ・明示制約の変更が必要な場合はREQUIREMENT_ERROR、重要な要求が未確定で実装できない場合はBLOCKEDとして受け取ります。継続判定に従い、未決に依存しない範囲を進めます。
 Build / Compile / Lint / Type Check等の既存実行契約とIMPLEMENTATION Scope Assuranceを行います。
 Production Code修正はImplementation、テスト修正は該当Test Agentに戻します。
 

@@ -45,7 +45,7 @@ Implementation工程では以下を重視します。
 
 # Inputs
 
-要件本文・UC/AC・NFR・Steering・準備済み仕様・既存コード・親の対象範囲とrun_idを読みます。
+要件本文・UC/AC・NFR・Steering・入力対応記録・準備済み仕様・既存コード・親の対象範囲とrun_idを読みます。
 # C0比較条件
 
 `.github/workflow-profile.json` の `NO_DESIGN_ADDR` を変更しません。
@@ -54,7 +54,9 @@ Requirements → Implementation → Unit Test → Integration Test → FULLの�
 詳細は `docs/ai-sdlc/no-design-comparison.md` を正とします。
 共通Criterion内の設計/判断文書だけに関する項目は対象外です。コードの構造・品質・安全性検査は残します。
 
-要件内の方式選択は実装し、AC・明示制約・スコープに影響する未決だけ親へ返します。
+テンプレートの「設計で決定」は、業務条件が確定している項目の実装方式を担当者が選ぶ指示です。
+内部コード値、削除・同時更新の実現方法、画面配置、外部指定のないIF方式などは、明示制約と観測可能なACを満たす方式を選び、根拠となる要件IDと選択理由を既存の実装報告に残します。
+外部契約・権限・合否条件が未確定で実装できない場合は、影響する要件・対象と確認事項をBLOCKEDとして親へ返します。
 
 # Procedure
 
@@ -74,7 +76,7 @@ Requirements → Implementation → Unit Test → Integration Test → FULLの�
 9. 認証・認可
 10. エラー仕様（共通）
 11. 非機能要件（NFR）
-12. データモデル
+12. 論理データ要件・関連・保持条件
 13. 機能要件（FR）
 14. 制約条件
 
@@ -99,7 +101,7 @@ Production Codeへの影響があるか確認してください。
 - 認証・認可
 - 共通エラー仕様
 - NFR
-- データモデル
+- 論理データ要件・関連・保持条件
 - 技術制約
 - 業務制約
 - Acceptance Criteria
